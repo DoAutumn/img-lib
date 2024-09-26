@@ -1,5 +1,6 @@
-# Vue 3 + TypeScript + Vite
+# DoAutumn图床
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+- 使用Gitee作为图床（Gitee相比GitHub访问更快一些）。
+- 通过Gitee的OpenAPI实现图片上传、展示，方便使用。
+- 而代码之所以提交到GitHub，则是因为GitHub提供Pages服务。
+- 访问地址：[https://doautumn.github.io/img-lib/](https://doautumn.github.io/img-lib/)
