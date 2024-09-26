@@ -70,15 +70,20 @@ const onCopy = (event: MouseEvent, img: Img) => {
   ElMessage.success('图片地址复制成功')
 }
 
-const onUpload = (options: UploadRequestOptions): Promise<unknown> => {
+const onElUpload = (options: UploadRequestOptions): Promise<unknown> => {
+  return onUpload(options.file)
+}
+
+const onUpload = (file: File) => {
   return new Promise((resolve, reject) => {
+    const instance = ElLoading.service()
     const reader = new FileReader()
     reader.onload = () => {
       request({
-        url: `/contents/${path.value}/${options.file.name}`,
+        url: `/contents/${path.value}/${file.name}`,
         method: 'post',
         data: {
-          content: (reader.result as string).replace(`data:${options.file.type};base64,`, ''),
+          content: (reader.result as string).replace(`data:${file.type};base64,`, ''),
           access_token: 'c90d9f578adc21de50b934d718255ca2',
           message: 'upload image',
         }
@@ -86,12 +91,18 @@ const onUpload = (options: UploadRequestOptions): Promise<unknown> => {
       .then((res: any) => {
         uploadedImgs.value.push(res.content)
         resolve(res.content)
+        instance.close()
       })
       .catch(err => {
         reject(err)
+        instance.close()
       })
     }
-    reader.readAsDataURL(options.file)
+    reader.onerror = (err) => {
+      reject(err)
+      instance.close()
+    }
+    reader.readAsDataURL(file)
   })
 }
 
@@ -99,6 +110,17 @@ const onUpload = (options: UploadRequestOptions): Promise<unknown> => {
 //   fullImgs.value = imgs
 //   showImgs.value = [...imgs]
 // })
+
+document.addEventListener('paste', (event: ClipboardEvent) => {
+  const files = event.clipboardData?.files
+  if (!files?.length) return
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    if (file.type.startsWith('image')) {
+      onUpload(file)
+    }
+  }
+})
 </script>
 
 <template>
@@ -110,7 +132,7 @@ const onUpload = (options: UploadRequestOptions): Promise<unknown> => {
       <svg @click="onSearch" t="1727319955975" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4280" width="26" height="26"><path d="M948.48 833.92l-185.6-183.68c-3.84-3.84-8.32-6.4-13.44-7.68C801.28 580.48 832 501.76 832 416 832 221.44 674.56 64 480 64 285.44 64 128 221.44 128 416 128 610.56 285.44 768 480 768c85.76 0 163.84-30.72 225.28-81.28 1.92 4.48 4.48 8.96 8.32 12.8l185.6 183.68c14.08 13.44 35.84 13.44 49.92 0S962.56 847.36 948.48 833.92zM480 704C320.64 704 192 575.36 192 416 192 256.64 320.64 128 480 128 639.36 128 768 256.64 768 416 768 575.36 639.36 704 480 704z" p-id="4281" fill="#1296db"></path></svg>
     </div>
   </div>
-  <el-upload class="upload-box" drag multiple accept="image/*" :show-file-list="false" :http-request="onUpload">
+  <el-upload class="upload-box" drag multiple accept="image/*" :show-file-list="false" :http-request="onElUpload">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="44" height="44"><path fill="#a8abb2" d="M544 864V672h128L512 480 352 672h128v192H320v-1.6c-5.376.32-10.496 1.6-16 1.6A240 240 0 0 1 64 624c0-123.136 93.12-223.488 212.608-237.248A239.808 239.808 0 0 1 512 192a239.872 239.872 0 0 1 235.456 194.752c119.488 13.76 212.48 114.112 212.48 237.248a240 240 0 0 1-240 240c-5.376 0-10.56-1.28-16-1.6v1.6z"></path></svg>
     <div class="el-upload__text">
       Drop file here or <em>click to upload</em>
