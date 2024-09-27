@@ -66,7 +66,7 @@ const onSearch = () => {
 }
 
 const onCopy = (event: MouseEvent, img: Img) => {
-  copy(event.altKey ? img.download_url : `![${img.name}](${img.download_url})`)
+  copy(event.altKey ? img.download_url : event.shiftKey ? `<img width="500" alt="${img.name}" src="${img.download_url}">` : `![${img.name}](${img.download_url})`)
   ElMessage.success('图片地址复制成功')
 }
 
