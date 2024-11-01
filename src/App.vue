@@ -3,6 +3,7 @@ import { useClipboard } from '@vueuse/core'
 import { ref } from 'vue'
 import { ElImage, ElInput, ElLoading, ElMessage, ElUpload, UploadRequestOptions } from 'element-plus'
 import request from './request'
+import { uploadPath } from './components/upload-path';
 
 type Img = {
   name: string,
@@ -16,7 +17,6 @@ const Img_RegExp = /.(GIF|JPG|JPEG|PNG|WebP|TIFF|BMP|HEIF|SVG)$/i
 
 const { copy } = useClipboard()
 
-const path = ref('')
 const search = ref('')
 const fullImgs = ref<Img[]>([])
 const showImgs = ref<Img[]>([])
@@ -71,16 +71,18 @@ const onCopy = (event: MouseEvent, img: Img) => {
 }
 
 const onElUpload = (options: UploadRequestOptions): Promise<unknown> => {
-  return onUpload(options.file)
+  return uploadPath().then((path) => {
+    return onUpload(options.file, path)
+  })
 }
 
-const onUpload = (file: File) => {
+const onUpload = (file: File, path: string) => {
   return new Promise((resolve, reject) => {
     const instance = ElLoading.service()
     const reader = new FileReader()
     reader.onload = () => {
       request({
-        url: `/contents/${path.value}/${file.name}`,
+        url: `/contents/${path}/${file.name}`,
         method: 'post',
         data: {
           content: (reader.result as string).replace(`data:${file.type};base64,`, ''),
@@ -117,7 +119,9 @@ document.addEventListener('paste', (event: ClipboardEvent) => {
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
     if (file.type.startsWith('image')) {
-      onUpload(file)
+      uploadPath().then((path) => {
+        onUpload(file, path)
+      })
     }
   }
 })
@@ -137,11 +141,6 @@ document.addEventListener('paste', (event: ClipboardEvent) => {
     <div class="el-upload__text">
       Drop file here or <em>click to upload</em>
     </div>
-    <template #tip>
-      <div class="el-upload__tip">
-        <el-input v-model="path" placeholder="上传图片的存储路径" size="small" style="width: 240px;" />
-      </div>
-    </template>
   </el-upload>
   <ul class="el-upload-list el-upload-list--picture">
     <li v-for="img in uploadedImgs" :key="img.sha" class="el-upload-list__item is-success" @click="onCopy($event, img)">
