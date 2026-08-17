@@ -14,6 +14,7 @@ type Img = {
 }
 
 const Img_RegExp = /.(GIF|JPG|JPEG|PNG|WebP|TIFF|BMP|HEIF|SVG)$/i
+const ACCESS_TOKEN = 'c59b2551ba9a676e1f023a6a72521a11'
 
 const { copy } = useClipboard()
 
@@ -24,7 +25,7 @@ const uploadedImgs = ref<Img[]>([])
 
 const getImgsFromGitee = async (path = '/'): Promise<Img[]> => {
   return await request({
-    url: `/contents/${path}?access_token=c90d9f578adc21de50b934d718255ca2`,
+    url: `/contents/${path}?access_token=${ACCESS_TOKEN}`,
     method: 'get'
   })
 }
@@ -86,7 +87,7 @@ const onUpload = (file: File, path: string) => {
         method: 'post',
         data: {
           content: (reader.result as string).replace(`data:${file.type};base64,`, ''),
-          access_token: 'c90d9f578adc21de50b934d718255ca2',
+          access_token: ACCESS_TOKEN,
           message: 'upload image',
         }
       })
